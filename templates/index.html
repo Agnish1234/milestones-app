@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Milestones{% endblock %}
+
+{% block content %}
+<h2>ADD YOUR MILESTONE</h2>
+<form action="{{ url_for('add_milestone') }}" method="POST">
+  <div class="mb-3">
+    <label for="titleInput" class="form-label">Milestone name</label>
+    <input type="text" class="form-control" id="titleInput" name="title" aria-describedby="titleHelp" maxlength="100" required>
+    <div id="titleHelp" class="form-text">Enter the name of your milestone.</div>
+  </div>
+  <div class="mb-3">
+    <label for="descriptionInput" class="form-label">Description</label>
+    <input type="text" class="form-control" id="descriptionInput" name="description" maxlength="255">
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+<div class="mt-5">
+  <h2>MILESTONES DATA</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Title</th>
+        <th scope="col">Description</th>
+        <th scope="col">Date Updated</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if milestones %}
+      {% for milestone in milestones %}
+      <tr>
+        <th scope="row">{{ milestone.id }}</th>
+        <td>{{ milestone.title }}</td>
+        <td>{{ milestone.description }}</td>
+        <td>{{ (milestone.date_updated or milestone.date_created).strftime('%Y-%m-%d ; %H:%M:%S') }}</td>
+        <td>
+          <form action="{{ url_for('delete_milestone', milestone_id=milestone.id) }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-outline-dark btn-sm mx-1">Delete</button>
+          </form>
+          <a href="{{ url_for('update_milestone', milestone_id=milestone.id) }}" class="btn btn-outline-dark btn-sm mx-1">Update</a>
+        </td>
+      </tr>
+      {% endfor %}
+      {% else %}
+      <tr>
+        <td colspan="5" class="text-center">No milestones yet. Add one!</td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

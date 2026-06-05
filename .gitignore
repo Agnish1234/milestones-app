@@ -1,0 +1,19 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+env/
+venv/
+ENV/
+
+# Database files
+*.db
+instance/*.db
+
+# IDE files
+.vscode/
+*.swp
+.DS_Store
