@@ -1,20 +1,15 @@
 {% extends 'base.html' %}
+{% from '_macros.html' import text_field, milestone_timestamp %}
 
 {% block title %}Update Milestone{% endblock %}
 
 {% block content %}
 <div class="my-4">
   <h2>Update Milestone</h2>
-  <p class="text-muted">Last updated: {{ (milestone.date_updated or milestone.date_created).strftime('%Y-%m-%d %H:%M:%S') }}</p>
+  <p class="text-muted">Last updated: {{ milestone_timestamp(milestone) }}</p>
   <form method="POST" action="{{ url_for('update_milestone', milestone_id=milestone.id) }}">
-    <div class="mb-3">
-      <label for="title" class="form-label">Title</label>
-      <input id="title" name="title" class="form-control" required value="{{ milestone.title }}">
-    </div>
-    <div class="mb-3">
-      <label for="description" class="form-label">Description</label>
-      <input id="description" name="description" class="form-control" value="{{ milestone.description }}">
-    </div>
+    {{ text_field('title', 'title', 'Title', value=milestone.title, required=True) }}
+    {{ text_field('description', 'description', 'Description', value=milestone.description) }}
     <button type="submit" class="btn btn-primary">Save</button>
     <a href="{{ url_for('greetings') }}" class="btn btn-secondary">Cancel</a>
   </form>
