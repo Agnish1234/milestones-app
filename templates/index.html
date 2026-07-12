@@ -5,6 +5,7 @@
 {% block content %}
 <h2>ADD YOUR MILESTONE</h2>
 <form action="{{ url_for('add_milestone') }}" method="POST">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="mb-3">
     <label for="titleInput" class="form-label">Milestone name</label>
     <input type="text" class="form-control" id="titleInput" name="title" aria-describedby="titleHelp" maxlength="100" required>
@@ -39,6 +40,7 @@
         <td>{{ (milestone.date_updated or milestone.date_created).strftime('%Y-%m-%d ; %H:%M:%S') }}</td>
         <td>
           <form action="{{ url_for('delete_milestone', milestone_id=milestone.id) }}" method="POST" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-outline-dark btn-sm mx-1">Delete</button>
           </form>
           <a href="{{ url_for('update_milestone', milestone_id=milestone.id) }}" class="btn btn-outline-dark btn-sm mx-1">Update</a>

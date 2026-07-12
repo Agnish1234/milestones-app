@@ -5,10 +5,12 @@ from dotenv import load_dotenv
 from models import db, Milestone
 from config import Config
 from flask_migrate import Migrate
+from flask_wtf.csrf import CSRFProtect
 
 load_dotenv()
 
 migrate = Migrate()
+csrf = CSRFProtect()
 
 
 def create_app():
@@ -18,6 +20,7 @@ def create_app():
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
     db.init_app(app)
     migrate.init_app(app, db)
+    csrf.init_app(app)
 
     with app.app_context():
         db.create_all()
@@ -48,10 +51,12 @@ def create_app():
     def update_milestone(milestone_id):
         milestone = Milestone.query.get_or_404(milestone_id)
         if request.method == 'POST':
-            milestone.title = request.form['title']
-            milestone.description = request.form['description']
-            milestone.date_updated = milestone.get_timestamp()
-            db.session.commit()
+            title = request.form.get('title')
+            if title:
+                milestone.title = title
+                milestone.description = request.form.get('description')
+                milestone.date_updated = milestone.get_timestamp()
+                db.session.commit()
             return redirect(url_for('greetings'))
         return render_template('update.html', milestone=milestone)
 

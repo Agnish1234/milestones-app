@@ -1,4 +1,5 @@
 import os
+import secrets
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -9,7 +10,12 @@ except Exception:
     pass
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
+    # Never fall back to a hard-coded/predictable secret. If SECRET_KEY is not
+    # provided via the environment (as it must be in production), generate a
+    # random per-process key so sessions/CSRF tokens cannot be forged with a
+    # known default. A production deployment should always set SECRET_KEY so the
+    # value stays stable across restarts and workers.
+    SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Get DATABASE_URL and strip whitespace
