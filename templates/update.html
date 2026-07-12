@@ -7,6 +7,7 @@
   <h2>Update Milestone</h2>
   <p class="text-muted">Last updated: {{ (milestone.date_updated or milestone.date_created).strftime('%Y-%m-%d %H:%M:%S') }}</p>
   <form method="POST" action="{{ url_for('update_milestone', milestone_id=milestone.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="mb-3">
       <label for="title" class="form-label">Title</label>
       <input id="title" name="title" class="form-control" required value="{{ milestone.title }}">
