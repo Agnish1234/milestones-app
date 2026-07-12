@@ -1,12 +1,15 @@
+import logging
 import os
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent
 INSTANCE_DIR = BASE_DIR / 'instance'
 try:
     INSTANCE_DIR.mkdir(exist_ok=True)
-except Exception:
-    pass
+except OSError:
+    logger.warning('Could not create instance directory %s', INSTANCE_DIR, exc_info=True)
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
