@@ -18,18 +18,19 @@ with app.app_context():
         if created:
             try:
                 created_dt = datetime.fromisoformat(created)
-            except Exception:
-                # fallback: treat as naive UTC
-                created_dt = datetime.fromtimestamp(0, timezone.utc)
-            created_ist = created_dt.astimezone(LOCAL_TZ).isoformat()
-            cur.execute(f"UPDATE {Milestone.__table__.name} SET date_created=? WHERE id=?", (created_ist, id_))
+            except (ValueError, TypeError) as exc:
+                print(f"Skipping row {id_}: could not parse date_created={created!r}: {exc}")
+            else:
+                created_ist = created_dt.astimezone(LOCAL_TZ).isoformat()
+                cur.execute(f"UPDATE {Milestone.__table__.name} SET date_created=? WHERE id=?", (created_ist, id_))
         if updated:
             try:
                 updated_dt = datetime.fromisoformat(updated)
-            except Exception:
-                updated_dt = datetime.fromtimestamp(0, timezone.utc)
-            updated_ist = updated_dt.astimezone(LOCAL_TZ).isoformat()
-            cur.execute(f"UPDATE {Milestone.__table__.name} SET date_updated=? WHERE id=?", (updated_ist, id_))
+            except (ValueError, TypeError) as exc:
+                print(f"Skipping row {id_}: could not parse date_updated={updated!r}: {exc}")
+            else:
+                updated_ist = updated_dt.astimezone(LOCAL_TZ).isoformat()
+                cur.execute(f"UPDATE {Milestone.__table__.name} SET date_updated=? WHERE id=?", (updated_ist, id_))
     conn.commit()
     conn.close()
     print('Converted timestamps to IST (string ISO format)')

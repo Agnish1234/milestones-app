@@ -1,12 +1,16 @@
 from pathlib import Path
+import logging
 import os
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from dotenv import load_dotenv
+from sqlalchemy.exc import SQLAlchemyError
 from models import db, Milestone
 from config import Config
 from flask_migrate import Migrate
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 migrate = Migrate()
 
@@ -29,29 +33,52 @@ def create_app():
 
     @app.route('/add', methods=['POST'])
     def add_milestone():
-        title = request.form.get('title')
+        title = (request.form.get('title') or '').strip()
         description = request.form.get('description')
-        if title:
-            milestone = Milestone(title=title, description=description)
-            db.session.add(milestone)
+        if not title:
+            flash('Title is required.', 'error')
+            return redirect(url_for('greetings'))
+        milestone = Milestone(title=title, description=description)
+        db.session.add(milestone)
+        try:
             db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            logger.exception('Failed to add milestone')
+            flash('Could not save the milestone. Please try again.', 'error')
         return redirect(url_for('greetings'))
 
     @app.route('/delete/<int:milestone_id>', methods=['POST'])
     def delete_milestone(milestone_id):
         milestone = Milestone.query.get_or_404(milestone_id)
         db.session.delete(milestone)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            logger.exception('Failed to delete milestone %s', milestone_id)
+            flash('Could not delete the milestone. Please try again.', 'error')
         return redirect(url_for('greetings'))
 
     @app.route('/update/<int:milestone_id>', methods=['GET', 'POST'])
     def update_milestone(milestone_id):
         milestone = Milestone.query.get_or_404(milestone_id)
         if request.method == 'POST':
-            milestone.title = request.form['title']
-            milestone.description = request.form['description']
+            title = (request.form.get('title') or '').strip()
+            description = request.form.get('description')
+            if not title:
+                flash('Title is required.', 'error')
+                return redirect(url_for('update_milestone', milestone_id=milestone_id))
+            milestone.title = title
+            milestone.description = description
             milestone.date_updated = milestone.get_timestamp()
-            db.session.commit()
+            try:
+                db.session.commit()
+            except SQLAlchemyError:
+                db.session.rollback()
+                logger.exception('Failed to update milestone %s', milestone_id)
+                flash('Could not update the milestone. Please try again.', 'error')
+                return redirect(url_for('update_milestone', milestone_id=milestone_id))
             return redirect(url_for('greetings'))
         return render_template('update.html', milestone=milestone)
 
